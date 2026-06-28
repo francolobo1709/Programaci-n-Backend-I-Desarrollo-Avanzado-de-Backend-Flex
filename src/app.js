@@ -1,34 +1,34 @@
+import express from 'express';
 import { config } from './config/env.config.js';
-import ServiceManager from './managers/ServiceManager.js';
+import servicesRouter from './routes/services.router.js';
+import { errorHandler } from './middlewares/errorHandler.js';
 
-console.log(`🚀 Iniciando CleanMatch en modo: ${config.env}`);
-console.log(`📡 Servidor configurado para el puerto: ${config.port}\n`);
+const app = express();
 
-const manager = new ServiceManager();
+app.use(express.json());
 
-// PRUEBAS DE LOS CRITERIOS DE ACEPTACIÓN
-console.log("--- 1. Agregando un servicio válido ---");
-const s1 = manager.addService({
-    name: "Limpieza General",
-    description: "Limpieza estándar de mantenimiento",
-    duration: 3,
-    price: 5000,
-    category: "limpieza",
-    available: true
+app.get('/', (_req, res) => {
+    res.status(200).json({
+        status:  'ok',
+        app:     'CleanMatch API',
+        version: '2.0.0',
+        endpoints: {
+            services: '/api/services',
+        },
+    });
 });
-console.log(s1);
 
-console.log("\n--- 2. Intentando agregar un servicio incompleto ---");
-const s2 = manager.addService({ name: "Limpieza Incompleta" });
-console.log(s2);
+app.use('/api/services', servicesRouter);
 
-console.log("\n--- 3. Obteniendo todos los servicios ---");
-console.log(manager.getServices());
+// Respuesta estándar para rutas no definidas
+app.use((req, res) => {
+    res.status(404).json({ error: `Ruta ${req.method} ${req.path} no encontrada.` });
+});
 
-console.log("\n--- 4. Actualizando servicio (intentando cambiar ID maliciosamente) ---");
-const updated = manager.updateService(1, { price: 6000, id: 999 }); 
-console.log(updated); // El ID debe seguir siendo 1
+// Manejador centralizado de errores (debe ir al final)
+app.use(errorHandler);
 
-console.log("\n--- 5. Eliminando el servicio ---");
-console.log(manager.deleteService(1));
-console.log("Servicios restantes:", manager.getServices());
+app.listen(config.port, () => {
+    console.log(`🚀 CleanMatch corriendo en modo: ${config.env}`);
+    console.log(`📡 Servidor escuchando en http://localhost:${config.port}`);
+});

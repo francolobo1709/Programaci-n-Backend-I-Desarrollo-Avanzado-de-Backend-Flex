@@ -1,70 +1,68 @@
+import { readFile, writeFile } from 'fs/promises';
+import { resolve } from 'path';
+import { fileURLToPath } from 'url';
+import { buildService } from '../models/Service.model.js';
+import { NotFoundError } from '../errors/AppError.js';
+
+const DATA_PATH = resolve(fileURLToPath(new URL('.', import.meta.url)), '../data/services.json');
+
 class ServiceManager {
-    constructor() {
-        this.services = [];
-        this.currentId = 1;
-    }
+    #services   = [];
+    #currentId  = 1;
 
-    getServices() {
-        return this.services;
-    }
-
-    getServiceById(id) {
-        const service = this.services.find(s => s.id === id);
-        if (!service) {
-            return { error: `Servicio con id ${id} no encontrado.` };
+    /** Carga los datos desde services.json al arrancar. */
+    async init() {
+        try {
+            const raw = await readFile(DATA_PATH, 'utf-8');
+            this.#services = JSON.parse(raw);
+            if (this.#services.length > 0) {
+                this.#currentId = Math.max(...this.#services.map(s => s.id)) + 1;
+            }
+        } catch {
+            this.#services = [];
         }
+    }
+
+    /** Escribe el estado actual en services.json. */
+    async #persist() {
+        await writeFile(DATA_PATH, JSON.stringify(this.#services, null, 2), 'utf-8');
+    }
+
+    getAll(limit) {
+        const list = [...this.#services];
+        return limit ? list.slice(0, limit) : list;
+    }
+
+    getById(id) {
+        const service = this.#services.find(s => s.id === id);
+        if (!service) throw new NotFoundError(id);
         return service;
     }
 
-    addService(serviceData) {
-        const { name, description, duration, price, category, available } = serviceData;
-
-        // Validación estricta de campos obligatorios
-        if (!name || !description || !duration || !price || !category || available === undefined) {
-            return { error: "Faltan campos obligatorios. Se requiere: name, description, duration, price, category, available." };
-        }
-
-        const newService = {
-            id: this.currentId++, // El id se genera internamente
-            name,
-            description,
-            duration,
-            price,
-            category,
-            available
-        };
-
-        this.services.push(newService);
-        return newService;
+    async add(data) {
+        const service = buildService(this.#currentId++, data);
+        this.#services.push(service);
+        await this.#persist();
+        return service;
     }
 
-    updateService(id, updatedData) {
-        const serviceIndex = this.services.findIndex(s => s.id === id);
-        
-        if (serviceIndex === -1) {
-            return { error: `No se puede actualizar. Servicio con id ${id} no encontrado.` };
-        }
+    async update(id, data) {
+        const index = this.#services.findIndex(s => s.id === id);
+        if (index === -1) throw new NotFoundError(id);
 
-        // Extraemos el id de updatedData por si lo envían, para evitar que lo modifiquen
-        const { id: _, ...safeData } = updatedData;
-        
-        this.services[serviceIndex] = {
-            ...this.services[serviceIndex],
-            ...safeData
-        };
-
-        return this.services[serviceIndex];
+        const { id: _ignored, ...safeData } = data;
+        this.#services[index] = { ...this.#services[index], ...safeData };
+        await this.#persist();
+        return this.#services[index];
     }
 
-    deleteService(id) {
-        const serviceIndex = this.services.findIndex(s => s.id === id);
-        
-        if (serviceIndex === -1) {
-            return { error: `No se puede eliminar. Servicio con id ${id} no encontrado.` };
-        }
+    async remove(id) {
+        const index = this.#services.findIndex(s => s.id === id);
+        if (index === -1) throw new NotFoundError(id);
 
-        const deletedService = this.services.splice(serviceIndex, 1);
-        return deletedService[0];
+        const [deleted] = this.#services.splice(index, 1);
+        await this.#persist();
+        return deleted;
     }
 }
 
