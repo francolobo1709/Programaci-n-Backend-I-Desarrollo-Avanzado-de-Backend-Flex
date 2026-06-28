@@ -1,78 +1,67 @@
 import { Router } from 'express';
 import ServiceManager from '../managers/ServiceManager.js';
+import { parseId } from '../middlewares/parseId.js';
 
-const router = Router();
+const router  = Router();
 const manager = new ServiceManager();
 
+// Carga datos desde services.json antes de registrar las rutas (top-level await en ESM)
+await manager.init();
+
 // GET /api/services  |  GET /api/services?limit=n
-router.get('/', (req, res) => {
-    const { limit } = req.query;
-    let services = manager.getServices();
+router.get('/', async (req, res, next) => {
+    try {
+        const { limit } = req.query;
+        let parsedLimit;
 
-    if (limit !== undefined) {
-        const parsedLimit = parseInt(limit, 10);
-        if (isNaN(parsedLimit) || parsedLimit < 1) {
-            return res.status(400).json({ error: 'El parámetro limit debe ser un número entero positivo.' });
+        if (limit !== undefined) {
+            parsedLimit = parseInt(limit, 10);
+            if (isNaN(parsedLimit) || parsedLimit < 1) {
+                return res.status(400).json({ error: 'El parámetro limit debe ser un número entero positivo.' });
+            }
         }
-        services = services.slice(0, parsedLimit);
-    }
 
-    res.status(200).json(services);
+        res.json(manager.getAll(parsedLimit));
+    } catch (err) {
+        next(err);
+    }
 });
 
 // GET /api/services/:id
-router.get('/:id', (req, res) => {
-    const id = parseInt(req.params.id, 10);
-    if (isNaN(id)) {
-        return res.status(400).json({ error: 'El id debe ser un número entero.' });
+router.get('/:id', parseId, (req, res, next) => {
+    try {
+        res.json(manager.getById(req.parsedId));
+    } catch (err) {
+        next(err);
     }
-
-    const result = manager.getServiceById(id);
-    if (result.error) {
-        return res.status(404).json(result);
-    }
-
-    res.status(200).json(result);
 });
 
 // POST /api/services
-router.post('/', (req, res) => {
-    const result = manager.addService(req.body);
-    if (result.error) {
-        return res.status(400).json(result);
+router.post('/', async (req, res, next) => {
+    try {
+        const service = await manager.add(req.body);
+        res.status(201).json(service);
+    } catch (err) {
+        next(err);
     }
-
-    res.status(201).json(result);
 });
 
 // PUT /api/services/:id
-router.put('/:id', (req, res) => {
-    const id = parseInt(req.params.id, 10);
-    if (isNaN(id)) {
-        return res.status(400).json({ error: 'El id debe ser un número entero.' });
+router.put('/:id', parseId, async (req, res, next) => {
+    try {
+        res.json(await manager.update(req.parsedId, req.body));
+    } catch (err) {
+        next(err);
     }
-
-    const result = manager.updateService(id, req.body);
-    if (result.error) {
-        return res.status(404).json(result);
-    }
-
-    res.status(200).json(result);
 });
 
 // DELETE /api/services/:id
-router.delete('/:id', (req, res) => {
-    const id = parseInt(req.params.id, 10);
-    if (isNaN(id)) {
-        return res.status(400).json({ error: 'El id debe ser un número entero.' });
+router.delete('/:id', parseId, async (req, res, next) => {
+    try {
+        res.json(await manager.remove(req.parsedId));
+    } catch (err) {
+        next(err);
     }
-
-    const result = manager.deleteService(id);
-    if (result.error) {
-        return res.status(404).json(result);
-    }
-
-    res.status(200).json(result);
 });
 
 export default router;
