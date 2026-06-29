@@ -1,6 +1,6 @@
 import express from 'express';
-import { config } from './config/env.config.js';
 import servicesRouter from './routes/services.router.js';
+import bookingsRouter from './routes/bookings.router.js';
 import { errorHandler } from './middlewares/errorHandler.js';
 
 const app = express();
@@ -14,11 +14,13 @@ app.get('/', (_req, res) => {
         version: '2.0.0',
         endpoints: {
             services: '/api/services',
+            bookings: '/api/bookings',
         },
     });
 });
 
 app.use('/api/services', servicesRouter);
+app.use('/api/bookings', bookingsRouter);
 
 // Respuesta estándar para rutas no definidas
 app.use((req, res) => {
@@ -28,7 +30,4 @@ app.use((req, res) => {
 // Manejador centralizado de errores (debe ir al final)
 app.use(errorHandler);
 
-app.listen(config.port, () => {
-    console.log(`🚀 CleanMatch corriendo en modo: ${config.env}`);
-    console.log(`📡 Servidor escuchando en http://localhost:${config.port}`);
-});
+export { app };

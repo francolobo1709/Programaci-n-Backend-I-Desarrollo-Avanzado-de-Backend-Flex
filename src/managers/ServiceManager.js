@@ -35,7 +35,7 @@ class ServiceManager {
 
     getById(id) {
         const service = this.#services.find(s => s.id === id);
-        if (!service) throw new NotFoundError(id);
+        if (!service) throw new NotFoundError(id, 'Servicio');
         return service;
     }
 
@@ -48,7 +48,7 @@ class ServiceManager {
 
     async update(id, data) {
         const index = this.#services.findIndex(s => s.id === id);
-        if (index === -1) throw new NotFoundError(id);
+        if (index === -1) throw new NotFoundError(id, 'Servicio');
 
         const { id: _ignored, ...safeData } = data;
         this.#services[index] = { ...this.#services[index], ...safeData };
@@ -58,7 +58,7 @@ class ServiceManager {
 
     async remove(id) {
         const index = this.#services.findIndex(s => s.id === id);
-        if (index === -1) throw new NotFoundError(id);
+        if (index === -1) throw new NotFoundError(id, 'Servicio');
 
         const [deleted] = this.#services.splice(index, 1);
         await this.#persist();

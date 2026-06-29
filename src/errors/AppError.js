@@ -13,7 +13,7 @@ export class ValidationError extends AppError {
 }
 
 export class NotFoundError extends AppError {
-    constructor(id) {
-        super(`Servicio con id ${id} no encontrado.`, 404);
+    constructor(id, resource = 'Recurso') {
+        super(`${resource} con id ${id} no encontrado.`, 404);
     }
 }

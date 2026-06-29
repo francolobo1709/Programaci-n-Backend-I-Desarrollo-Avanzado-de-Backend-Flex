@@ -1,6 +1,6 @@
-# CleanMatch - Administrador de Servicios 🧹
+# CleanMatch - API de Servicios y Reservas 🧹
 
-Proyecto Node.js para gestionar los servicios de un sistema de turnos y reservas (estilo Tinder para servicios domésticos). Este README refleja la **Pre-entrega 2**, que incorpora un servidor **Express** con enrutamiento REST completo sobre el recurso `Services`.
+Proyecto Node.js para gestionar servicios y reservas de un sistema de turnos (estilo Tinder para servicios domésticos). Este README refleja la **Pre-entrega 2**, que incorpora un servidor **Express** con enrutamiento REST completo sobre los recursos `Services` y `Bookings`, con persistencia en archivos JSON mediante `fs/promises`.
 
 ## Requisitos
 - Node.js (v14 o superior)
@@ -204,22 +204,135 @@ Retorna los primeros `n` servicios. Si `limit` no es un número positivo, devuel
 | `category`    | String  | Tipo de servicio                               |
 | `available`   | Boolean | Estado de disponibilidad                       |
 
+---
+
+## API REST — Endpoints de `Bookings`
+
+Base URL: `http://localhost:8080/api/bookings`
+
+> Configurá el header `Content-Type: application/json` en Postman para POST y PUT.
+
+---
+
+### 1. Listar todas las reservas
+
+| Método | URL | Código |
+|--------|-----|--------|
+| GET | `/api/bookings` | `200 OK` |
+
+---
+
+### 2. Listar con límite
+
+| Método | URL | Código |
+|--------|-----|--------|
+| GET | `/api/bookings?limit=2` | `200 OK` |
+
+---
+
+### 3. Obtener reserva por ID
+
+| Método | URL | Código |
+|--------|-----|--------|
+| GET | `/api/bookings/:id` | `200 OK` / `404` |
+
+---
+
+### 4. Crear una reserva
+
+| Método | URL | Código |
+|--------|-----|--------|
+| POST | `/api/bookings` | `201 Created` / `400` |
+
+Body ejemplo:
+```json
+{
+  "serviceId": 1,
+  "clientName": "Juan Pérez",
+  "clientEmail": "juan@email.com",
+  "date": "2026-07-15T10:00:00"
+}
+```
+
+Respuesta `201`:
+```json
+{
+  "id": 1,
+  "serviceId": 1,
+  "clientName": "Juan Pérez",
+  "clientEmail": "juan@email.com",
+  "date": "2026-07-15T10:00:00.000Z",
+  "status": "pending"
+}
+```
+
+---
+
+### 5. Actualizar una reserva
+
+| Método | URL | Código |
+|--------|-----|--------|
+| PUT | `/api/bookings/:id` | `200 OK` / `404` |
+
+Body ejemplo:
+```json
+{
+  "status": "confirmed"
+}
+```
+
+Valores válidos para `status`: `pending`, `confirmed`, `cancelled`.
+
+---
+
+### 6. Eliminar una reserva
+
+| Método | URL | Código |
+|--------|-----|--------|
+| DELETE | `/api/bookings/:id` | `200 OK` / `404` |
+
+---
+
+## Descripción del recurso `Bookings`
+
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| `id` | Number | Identificador único generado automáticamente |
+| `serviceId` | Number | ID del servicio reservado |
+| `clientName` | String | Nombre del cliente |
+| `clientEmail` | String | Email del cliente |
+| `date` | String | Fecha y hora de la reserva (ISO 8601) |
+| `status` | String | Estado: `pending`, `confirmed`, `cancelled` |
+
+---
+
 ## Estructura del Proyecto
 
 ```
 cleanmatch-backend/
 ├── src/
 │   ├── config/
-│   │   └── env.config.js         # Validación y exportación de variables de entorno
+│   │   └── env.config.js           # Validación y exportación de variables de entorno
 │   ├── data/
-│   │   └── services.json         # Datos de ejemplo (preparado para persistencia futura)
+│   │   ├── services.json           # Persistencia de servicios
+│   │   └── bookings.json           # Persistencia de reservas
+│   ├── errors/
+│   │   └── AppError.js             # Errores tipados (ValidationError, NotFoundError)
 │   ├── managers/
-│   │   └── ServiceManager.js     # Lógica CRUD del administrador de servicios
+│   │   ├── ServiceManager.js       # CRUD de servicios + persistencia
+│   │   └── BookingManager.js       # CRUD de reservas + persistencia
+│   ├── middlewares/
+│   │   ├── errorHandler.js         # Manejo centralizado de errores
+│   │   └── parseId.js              # Parseo y validación de :id
+│   ├── models/
+│   │   ├── Service.model.js        # Factory y validación del modelo Service
+│   │   └── Booking.model.js        # Factory y validación del modelo Booking
 │   ├── routes/
-│   │   └── services.router.js    # Rutas REST del recurso Services (Express Router)
-│   └── app.js                    # Punto de entrada — configura y levanta el servidor
-├── .env                          # Variables de entorno locales (NO subir a GitHub)
-├── .env.example                  # Plantilla de variables de entorno
+│   │   ├── services.router.js      # Rutas REST del recurso Services
+│   │   └── bookings.router.js      # Rutas REST del recurso Bookings
+│   └── app.js                      # Punto de entrada — configura y levanta el servidor
+├── .env                            # Variables de entorno locales (NO subir a GitHub)
+├── .env.example                    # Plantilla de variables de entorno
 ├── .gitignore
 └── package.json
 ```
