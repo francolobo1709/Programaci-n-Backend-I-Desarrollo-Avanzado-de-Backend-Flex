@@ -1,4 +1,5 @@
 import { bookingService } from '../services/booking.service.js';
+import { getIO } from '../config/socket.js';
 
 export const getBookings = async (req, res, next) => {
     try {
@@ -19,6 +20,8 @@ export const getBookingById = async (req, res, next) => {
 export const createBooking = async (req, res, next) => {
     try {
         const booking = await bookingService.create(req.body);
+        // Notifica a todos los clientes conectados sobre la nueva reserva
+        try { getIO().emit('booking:created', booking); } catch (_) {}
         res.status(201).json(booking);
     } catch (err) {
         next(err);

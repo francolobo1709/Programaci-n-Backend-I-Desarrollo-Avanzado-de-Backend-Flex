@@ -1,0 +1,27 @@
+import { messageRepository } from '../repositories/message.repository.js';
+import { bookingRepository } from '../repositories/booking.repository.js';
+import { ValidationError } from '../errors/AppError.js';
+
+const REQUIRED_FIELDS = ['booking', 'sender', 'content'];
+
+function validate(data) {
+    const missing = REQUIRED_FIELDS.filter(
+        (f) => data[f] === undefined || data[f] === null || data[f] === ''
+    );
+    if (missing.length > 0) {
+        throw new ValidationError(`Faltan campos obligatorios: ${missing.join(', ')}.`);
+    }
+}
+
+export const messageService = {
+    getAll: () => messageRepository.getAll(),
+    getById: (id) => messageRepository.getById(id),
+    getByBookingId: (bookingId) => messageRepository.getByBookingId(bookingId),
+    async create(data) {
+        validate(data);
+        // Verifica que la reserva exista antes de asociar el mensaje
+        await bookingRepository.getById(data.booking);
+        return messageRepository.create(data);
+    },
+    remove: (id) => messageRepository.remove(id),
+};

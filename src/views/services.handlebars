@@ -1,0 +1,25 @@
+<div class="page-header">
+    <h1>Servicios disponibles</h1>
+    <p class="realtime-badge">🟢 Actualización en tiempo real activa</p>
+</div>
+
+<div id="services-container" class="cards-grid">
+    {{#each services}}
+    <div class="card service-card" data-id="{{_id}}">
+        <div class="card-header">
+            <h2>{{name}}</h2>
+            <span class="badge {{#if available}}badge-available{{else}}badge-unavailable{{/if}}">
+                {{#if available}}Disponible{{else}}No disponible{{/if}}
+            </span>
+        </div>
+        <p class="card-description">{{description}}</p>
+        <ul class="card-details">
+            <li><span class="label">Duración</span><span class="value">{{duration}} min</span></li>
+            <li><span class="label">Precio</span><span class="value">${{price}}</span></li>
+            <li><span class="label">Categoría</span><span class="value">{{category}}</span></li>
+        </ul>
+    </div>
+    {{else}}
+    <p class="empty-state">No hay servicios registrados aún.</p>
+    {{/each}}
+</div>

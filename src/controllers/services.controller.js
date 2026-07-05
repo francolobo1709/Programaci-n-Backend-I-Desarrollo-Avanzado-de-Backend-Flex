@@ -1,4 +1,5 @@
 import { serviceService } from '../services/service.service.js';
+import { getIO } from '../config/socket.js';
 
 export const getServices = async (req, res, next) => {
     try {
@@ -19,6 +20,8 @@ export const getServiceById = async (req, res, next) => {
 export const createService = async (req, res, next) => {
     try {
         const service = await serviceService.create(req.body);
+        // Notifica a todos los clientes conectados sobre el nuevo servicio
+        try { getIO().emit('service:created', service); } catch (_) {}
         res.status(201).json(service);
     } catch (err) {
         next(err);

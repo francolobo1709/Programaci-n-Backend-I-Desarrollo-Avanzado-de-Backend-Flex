@@ -1,0 +1,31 @@
+<div class="page-header">
+    <h1>Disponibilidad de Turnos</h1>
+    <p class="realtime-badge">🟢 Actualización en tiempo real activa</p>
+</div>
+
+<div id="bookings-container" class="cards-grid">
+    {{#each bookings}}
+    <div class="card booking-card" data-id="{{_id}}">
+        <div class="card-header">
+            <h2>{{clientName}}</h2>
+            <span class="badge badge-status-{{status}}">{{status}}</span>
+        </div>
+        <ul class="card-details">
+            <li><span class="label">Email</span><span class="value">{{clientEmail}}</span></li>
+            <li><span class="label">Fecha</span><span class="value">{{formatDate date}}</span></li>
+        </ul>
+        {{#if services.length}}
+        <div class="booking-services">
+            <p class="label">Servicios:</p>
+            <ul>
+                {{#each services}}
+                <li>x{{quantity}} — {{service.name}}</li>
+                {{/each}}
+            </ul>
+        </div>
+        {{/if}}
+    </div>
+    {{else}}
+    <p class="empty-state">No hay reservas registradas aún.</p>
+    {{/each}}
+</div>
