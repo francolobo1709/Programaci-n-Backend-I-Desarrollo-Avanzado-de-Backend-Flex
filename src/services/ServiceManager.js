@@ -3,6 +3,8 @@ import { resolve } from 'path';
 import { fileURLToPath } from 'url';
 import { buildService } from '../models/Service.model.js';
 import { NotFoundError } from '../errors/AppError.js';
+// Antes: import ServiceManager from '../managers/ServiceManager.js';
+import ServiceManager from '../services/ServiceManager.js';
 
 const DATA_PATH = resolve(fileURLToPath(new URL('.', import.meta.url)), '../data/services.json');
 
