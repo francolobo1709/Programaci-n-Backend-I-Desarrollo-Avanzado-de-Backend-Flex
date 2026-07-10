@@ -1,19 +1,7 @@
-import { readFile, writeFile } from 'node:fs/promises';
-import { join, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { randomUUID } from 'node:crypto';
+import { createJsonStore } from './json.store.js';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const DATA_PATH = join(__dirname, '..', 'data', 'bookings.json');
-
-async function readData() {
-    const raw = await readFile(DATA_PATH, 'utf-8');
-    return JSON.parse(raw);
-}
-
-async function writeData(data) {
-    await writeFile(DATA_PATH, JSON.stringify(data, null, 2), 'utf-8');
-}
+const { readData, writeData } = createJsonStore('bookings.json');
 
 export class BookingDAO {
     async findAll() {

@@ -1,13 +1,8 @@
 import { BookingDAO } from '../dao/bookings.dao.js';
-import { NotFoundError, ValidationError } from '../errors/AppError.js';
+import { NotFoundError } from '../errors/AppError.js';
+import { assertValidId } from './repository.utils.js';
 
 const dao = new BookingDAO();
-
-function assertValidId(id) {
-    if (!id || typeof id !== 'string') {
-        throw new ValidationError(`El id '${id}' no es válido.`);
-    }
-}
 
 export const bookingRepository = {
     async getAll() {
