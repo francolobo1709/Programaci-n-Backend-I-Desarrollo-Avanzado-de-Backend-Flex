@@ -1,5 +1,5 @@
 import { messageRepository } from '../repositories/message.repository.js';
-import { bookingRepository } from '../repositories/booking.repository.js';
+import { bookingRepository } from '../repositories/bookings.repository.js';
 import { ValidationError } from '../errors/AppError.js';
 
 const REQUIRED_FIELDS = ['booking', 'sender', 'content'];

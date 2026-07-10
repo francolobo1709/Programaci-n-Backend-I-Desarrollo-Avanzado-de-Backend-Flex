@@ -1,10 +1,13 @@
 import { createServer } from 'node:http';
 import { app } from './app.js';
 import { config } from './config/env.config.js';
-import { connectDB } from './config/mongodb.js';
+import { connectDB } from './database/connection.js';
 import { initSocket } from './config/socket.js';
 
-await connectDB();
+// Conexión a MongoDB (necesaria para /api/messages)
+connectDB().catch((err) => {
+    console.warn(`⚠️  MongoDB no disponible: ${err.message}. /api/messages no funcionará.`);
+});
 
 const httpServer = createServer(app);
 const io = initSocket(httpServer);

@@ -1,4 +1,4 @@
-import { bookingService } from '../services/booking.service.js';
+import { bookingService } from '../services/bookings.service.js';
 import { getIO } from '../config/socket.js';
 
 export const getBookings = async (req, res, next) => {

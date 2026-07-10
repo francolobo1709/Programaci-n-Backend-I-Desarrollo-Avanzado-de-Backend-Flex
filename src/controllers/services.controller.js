@@ -1,9 +1,10 @@
-import { serviceService } from '../services/service.service.js';
+import { serviceService } from '../services/services.service.js';
 import { getIO } from '../config/socket.js';
 
 export const getServices = async (req, res, next) => {
     try {
-        res.json(await serviceService.getAll());
+        const { category, available, page, limit, sortBy, order } = req.query;
+        res.json(await serviceService.getAll({ category, available, page, limit, sortBy, order }));
     } catch (err) {
         next(err);
     }

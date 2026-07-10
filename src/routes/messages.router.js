@@ -1,7 +1,11 @@
 import { Router } from 'express';
 import * as messagesController from '../controllers/messages.controller.js';
+import { requireMongo } from '../middlewares/requireMongo.js';
 
 const router = Router();
+
+// Protege todos los endpoints de messages si MongoDB no está disponible
+router.use(requireMongo);
 
 // GET /api/messages
 router.get('/', messagesController.getMessages);

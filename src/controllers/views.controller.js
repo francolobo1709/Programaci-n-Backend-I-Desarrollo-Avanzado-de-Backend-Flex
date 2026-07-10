@@ -1,5 +1,5 @@
-import { serviceService } from '../services/service.service.js';
-import { bookingService } from '../services/booking.service.js';
+import { serviceService } from '../services/services.service.js';
+import { bookingService } from '../services/bookings.service.js';
 
 export const renderServices = async (req, res, next) => {
     try {
